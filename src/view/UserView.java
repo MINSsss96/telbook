@@ -5,6 +5,8 @@ import exception.InputValidation;
 import exception.MyException;
 import service.TelBookService;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +34,7 @@ public class UserView {
         }
 
         boolean ageOK = true;
-        int age =-1;
+        int age = -1;
         while (ageOK) {
             try {
                 System.out.println("나이를 입력하세요.");
@@ -58,10 +60,10 @@ public class UserView {
                 validation.phoneCheck(phone);
                 phoneOK = false;
             } catch (MyException e) {
-                System.out.println(e.getMessage());;
+                System.out.println(e.getMessage());
+                ;
             }
         }
-
 
 
         // 입력 받은 후에 빈 telDto에 넣는다.
@@ -71,6 +73,10 @@ public class UserView {
         dto.setAge(age);
         dto.setAddress(address);
         dto.setPhone(phone);
+        // 입력날짜
+        dto.setInsertedDate(LocalDateTime.now());
+        dto.setUpdatedDate(null);
+
         // 서비스에 insert 요청하기
         int result = telBookService.insertData(dto);
         // result > - : insert 성공, result = 0 ; 실패
@@ -92,6 +98,9 @@ public class UserView {
             System.out.println("찾는데이터가 없어요");
             return;
         } else {
+            // 수정날짜 넣어주기
+            oldDto.setUpdatedDate(LocalDateTime.now());
+
             // 수정작업 진행
             boolean yesOrNo = true;
             // 이름 수정 처리
@@ -101,7 +110,7 @@ public class UserView {
                 System.out.println("수정할까요(Y/N)?");
                 String strYesOrNo = sc.next();
                 if (strYesOrNo.toUpperCase().equals("Y")) {
-                    System.out.println("수정할 이름 : " );
+                    System.out.println("수정할 이름 : ");
                     oldDto.setName(sc.next());
                     yesOrNo = false;
                 } else {
@@ -116,7 +125,7 @@ public class UserView {
                 System.out.println("수정할까요(Y/N)?");
                 String strYesOrNo = sc.next();
                 if (strYesOrNo.toUpperCase().equals("Y")) {
-                    System.out.println("수정할 나이 : " );
+                    System.out.println("수정할 나이 : ");
                     oldDto.setAge(sc.nextInt());
                     yesOrNo = false;
                 } else {
@@ -131,7 +140,7 @@ public class UserView {
                 System.out.println("수정할까요(Y/N)?");
                 String strYesOrNo = sc.next();
                 if (strYesOrNo.toUpperCase().equals("Y")) {
-                    System.out.println("수정할 주소 : " );
+                    System.out.println("수정할 주소 : ");
                     oldDto.setAddress(sc.next());
                     yesOrNo = false;
                 } else {
@@ -146,7 +155,7 @@ public class UserView {
                 System.out.println("수정할까요(Y/N)?");
                 String strYesOrNo = sc.next();
                 if (strYesOrNo.toUpperCase().equals("Y")) {
-                    System.out.println("수정할 전화번호 : " );
+                    System.out.println("수정할 전화번호 : ");
                     oldDto.setPhone(sc.next());
                     yesOrNo = false;
                 } else {
@@ -172,9 +181,9 @@ public class UserView {
         // 삭제 요청 후 결과를 int 타입으로 받기
         int result = telBookService.deleteData(deleteId);
         // result 값이 양수면 성공, 그렇지 않으면 실패
-        if (result > 0 ) {
+        if (result > 0) {
             System.out.println("정상적으로 삭제되었습니다.");
-        }else {
+        } else {
             System.out.println("삭제되지 않았습니다.");
             System.out.println("관리자에게 문의하세요");
         }
@@ -188,9 +197,36 @@ public class UserView {
         // 서비스에 DB에서 리스트 요청하기
         dtoList = telBookService.getListAll();
         // 출력
-        dtoList.stream()
-                .forEach(x -> System.out.println(x));
+//        dtoList.stream()
+//                .forEach(x -> System.out.println(x));
+        for (TelDto dto : dtoList) {
+            String insertDate;
+            if (dto.getInsertedDate() != null) {
+                insertDate = dto.getInsertedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            } else {
+                insertDate = "";
+            }
 
+            String updateDate;
+            if (dto.getUpdatedDate() != null) {
+                updateDate = dto.getUpdatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            } else {
+                updateDate = "";
+            }
+
+
+            String output = "id=" + dto.getId() +
+                    ", name='" + dto.getName() + '\'' +
+                    ", age=" + dto.getAge() +
+                    ", address='" + dto.getAddress() + '\'' +
+                    ", phone='" + dto.getPhone() + '\'' +
+                    ", insertedDate='" + insertDate + '\'' +
+                    ", updatedDate='" + updateDate;
+
+            System.out.println(output);
+
+
+        }
     }
 
     public void searchView() {
@@ -201,13 +237,27 @@ public class UserView {
         List<TelDto> dtolist = telBookService.searchList(keyword);
         if (dtolist.size() == 0) {
             System.out.println("찾는 데이터가 없습니다.");
-        }else {
-            dtolist.stream()
-                    .forEach(x -> System.out.println(x));
+        } else {
+//            dtolist.stream()
+//                    .forEach(x -> System.out.println(x));
+            for (TelDto dto : dtolist) {
+                String insertDate;
+                if (dto.getInsertedDate() != null) {
+                    insertDate = dto.getInsertedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                } else {
+                    insertDate = "";
+                }
+
+                String updateDate;
+                if (dto.getUpdatedDate() != null) {
+                    updateDate = dto.getUpdatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                } else {
+                    updateDate = "";
+                }
+            }
+
+
         }
-
-
-
     }
 
 }

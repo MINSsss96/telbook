@@ -3,10 +3,7 @@ package service;
 import db.DBConn;
 import dto.TelDto;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,15 +19,15 @@ public class TelBookService implements CrudInterface {
         System.out.println("[TelBookService.insertData]");
 
         try {
-            sql = "INSERT INTO telbook(name, age, address, phone) ";
-            sql = sql + "VALUES(?, ?, ?, ?)";
+            sql = "INSERT INTO telBook(name, age, address, phone, insertedDate) ";
+            sql = sql + "VALUES(?, ?, ?, ?, ?)";
             psmt = conn.prepareStatement(sql);
             // ? 각 자리를 Mapping 해 준다.
             psmt.setString(1, dto.getName());
             psmt.setInt(2, dto.getAge());
             psmt.setString(3, dto.getAddress());
             psmt.setString(4, dto.getPhone());
-
+            psmt.setTimestamp(5, Timestamp.valueOf(dto.getInsertedDate()));
             //쿼리 실행하기
             int result = psmt.executeUpdate();
             psmt.close();
@@ -48,17 +45,19 @@ public class TelBookService implements CrudInterface {
         int result = 0;
         try {
             sql = " UPDATE telBook SET ";
-            sql = sql + " name = ?";
-            sql = sql + " age = ?";
-            sql = sql + " address = ?";
-            sql = sql + " phone = ?";
+            sql = sql + " name = ?,";
+            sql = sql + " age = ?, ";
+            sql = sql + " address = ?,";
+            sql = sql + " phone = ?,";
+            sql = sql + " updatedDate = ?";
             sql = sql + " WHERE id = ?";
             psmt = conn.prepareStatement(sql);
             psmt.setString(1, dto.getName());
             psmt.setInt(2, dto.getAge());
             psmt.setString(3, dto.getAddress());
             psmt.setString(4, dto.getPhone());
-            psmt.setInt(5, dto.getId());
+            psmt.setTimestamp(5, Timestamp.valueOf(dto.getUpdatedDate()));
+            psmt.setInt(6, dto.getId());
             result = psmt.executeUpdate();
             psmt.close();
 
@@ -107,6 +106,18 @@ public class TelBookService implements CrudInterface {
                 dto.setAge(rs.getInt("age"));
                 dto.setAddress(rs.getString("address"));
                 dto.setPhone(rs.getString("phone"));
+                // 날짜가 null 인지 확인 후 처리
+                if (rs.getTimestamp("insertedDate") != null) {
+                    dto.setInsertedDate(rs.getTimestamp("insertedDate").toLocalDateTime());
+                } else {
+                    dto.setInsertedDate(null);
+                }
+                if (rs.getTimestamp("updatedDate") != null) {
+                    dto.setUpdatedDate(rs.getTimestamp("updatedDate").toLocalDateTime());
+                } else {
+                    dto.setUpdatedDate(null);
+                }
+
 
                 // 리스트에 담기
                 dtoList.add(dto);
